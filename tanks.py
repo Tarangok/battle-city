@@ -1469,12 +1469,12 @@ class Game():
 				elif event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_q:
 						quit()
-					elif event.key == pygame.K_UP:
+					elif event.key == pygame.K_UP and self.menu_variant > 1:
 						if self.menu_variant == 2:
 							self.nr_of_players = 1
 						self.menu_variant -= 1
 						self.drawIntroScreen()
-					elif event.key == pygame.K_DOWN:
+					elif event.key == pygame.K_DOWN and self.menu_variant < 4:
 						if self.menu_variant == 1:
 							self.nr_of_players = 2
 						self.menu_variant += 1
@@ -2176,9 +2176,10 @@ class Game():
 							else:
 								screen = pygame.display.set_mode(self.size)
 								self.fullScreen = False
+							self.drawSettingsScreen()
 						elif(self.menu_variant == 4):
 							main_loop = False
-
+							self.drawIntroScreen()
 
 
 if __name__ == "__main__":
