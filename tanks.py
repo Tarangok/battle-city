@@ -1517,7 +1517,7 @@ class Game():
 		self.nextLevel()
 
 	def reloadPlayers(self):
-		""" Init players
+		""" Init players 
 		If players already exist, just reset them
 		"""
 
