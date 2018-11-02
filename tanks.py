@@ -1313,6 +1313,7 @@ class Game():
 		self.nr_of_players = 1
 
 		self.menu_variant = 1;
+		self.menu_variant_x = 1;
 
 		del players[:]
 		del bullets[:]
@@ -1454,10 +1455,13 @@ class Game():
 
 		# set current stage to 0
 		self.stage = 1
+		self.menu_state = 0;
+		self.fullScreen = 0
+
 
 		self.animateIntroScreen()
 
-		self.drawIntroScreen()
+		self.drawMenuScreen()
 
 		main_loop = True
 		while main_loop:
@@ -1473,19 +1477,40 @@ class Game():
 						if self.menu_variant == 2:
 							self.nr_of_players = 1
 						self.menu_variant -= 1
-						self.drawIntroScreen()
-					elif event.key == pygame.K_DOWN and self.menu_variant < 4:
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
+					elif event.key == pygame.K_DOWN and self.menu_variant < 3:
 						if self.menu_variant == 1:
 							self.nr_of_players = 2
 						self.menu_variant += 1
-						self.drawIntroScreen()
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
 					elif event.key == pygame.K_RETURN:
-						if(self.menu_variant == 2 or self.menu_variant == 1):
+						if(self.menu_variant == 2 or self.menu_variant == 1) and self.menu_state == 0:
 							main_loop = False
+						elif(self.menu_variant == 1) and self.menu_state == 1:
+							if(not self.fullScreen):
+								screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+								self.fullScreen = True
+							else:
+								screen = pygame.display.set_mode(self.size)
+								self.fullScreen = False
+							self.drawSettingsScreen()
 						elif(self.menu_variant == 3):
-							self.showSettings()
-						elif(self.menu_variant == 4):
-							quit()
+							if (self.menu_state == 0):
+								if (self.menu_state == 0):
+									self.menu_state = 1
+									self.drawSettingsScreen()
+								elif (self.menu_state == 1):
+									self.menu_state = 0
+									self.drawMenuScreen()
+							elif(self.menu_state == 1):
+								self.menu_state = 0
+								self.drawMenuScreen()
 
 
 		del players[:]
@@ -1732,7 +1757,7 @@ class Game():
 			screen.blit(self.font.render(str(self.stage), False, text_color), [x+17, y+312])
 
 
-	def drawIntroScreen(self, put_on_surface = True):
+	def drawMenuScreen(self, put_on_surface = True):
 		""" Draw intro (menu) screen
 		@param boolean put_on_surface If True, flip display after drawing
 		@return None
@@ -1751,7 +1776,6 @@ class Game():
 			screen.blit(self.font.render("1 PLAYER", True, pygame.Color('white')), [165, 250])
 			screen.blit(self.font.render("2 PLAYERS", True, pygame.Color('white')), [165, 275])
 			screen.blit(self.font.render("SETTINGS", True, pygame.Color('white')), [165, 300])
-			screen.blit(self.font.render("EXIT", True, pygame.Color('white')), [165, 325])
 
 			screen.blit(self.font.render("(c) 1980 1985 NAMCO LTD.", True, pygame.Color('white')), [50, 350])
 			screen.blit(self.font.render("ALL RIGHTS RESERVED", True, pygame.Color('white')), [85, 380])
@@ -1763,8 +1787,6 @@ class Game():
 			screen.blit(self.player_image, [125, 270])
 		elif self.menu_variant == 3:
 			screen.blit(self.player_image, [125, 295])
-		elif self.menu_variant == 4:
-			screen.blit(self.player_image, [125, 320])
 
 		self.writeInBricks("battle", [65, 80])
 		self.writeInBricks("city", [129, 160])
@@ -1786,7 +1808,7 @@ class Game():
 
 			screen.blit(self.font.render("FULL SCREEN", True, pygame.Color('white')), [165, 250])
 			
-			screen.blit(self.font.render("BACK", True, pygame.Color('white')), [165, 325])
+			screen.blit(self.font.render("BACK", True, pygame.Color('white')), [165, 300])
 
 			screen.blit(self.font.render("(c) 1980 1985 NAMCO LTD.", True, pygame.Color('white')), [50, 350])
 			screen.blit(self.font.render("ALL RIGHTS RESERVED", True, pygame.Color('white')), [85, 380])
@@ -1798,8 +1820,7 @@ class Game():
 			screen.blit(self.player_image, [125, 270])
 		elif self.menu_variant == 3:
 			screen.blit(self.player_image, [125, 295])
-		elif self.menu_variant == 4:
-			screen.blit(self.player_image, [125, 320])
+
 
 		self.writeInBricks("battle", [65, 80])
 		self.writeInBricks("city", [129, 160])
@@ -1815,7 +1836,7 @@ class Game():
 
 		global screen
 
-		self.drawIntroScreen(False)
+		self.drawMenuScreen(False)
 		screen_cp = screen.copy()
 
 		screen.fill([0, 0, 0])
@@ -2131,55 +2152,6 @@ class Game():
 			gtimer.update(time_passed)
 
 			self.draw()
-
-
-	def showSettings(self):
-		""" Show game menu
-		Redraw screen only when up or down key is pressed. When enter is pressed,
-		exit from this screen and start the game with selected number of players
-		"""
-
-		global players, screen
-
-		# stop game main loop (if any)
-		self.running = False
-
-		# clear all timers
-		del gtimer.timers[:]
-
-		# set current stage to 0
-		self.stage = 1
-		self.fullScreen = False
-		self.drawSettingsScreen()
-
-		main_loop = True
-		while main_loop:
-			time_passed = self.clock.tick(50)
-			print(self.menu_variant)
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					quit()
-				elif event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_q:
-						quit()
-					elif event.key == pygame.K_UP:
-						self.menu_variant -= 1
-						self.drawSettingsScreen()
-					elif event.key == pygame.K_DOWN:
-						self.menu_variant += 1
-						self.drawSettingsScreen()
-					elif event.key == pygame.K_RETURN:
-						if(self.menu_variant == 1):
-							if(not self.fullScreen):
-								screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
-								self.fullScreen = True
-							else:
-								screen = pygame.display.set_mode(self.size)
-								self.fullScreen = False
-							self.drawSettingsScreen()
-						elif(self.menu_variant == 4):
-							main_loop = False
-							self.drawIntroScreen()
 
 
 if __name__ == "__main__":
