@@ -1516,12 +1516,12 @@ class Game():
 							elif(self.menu_state == 1):
 								self.menu_state = 0
 								self.drawMenuScreen()
-								
+
 #Joystick (Gamepad)
-				elif event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_q:
+				elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION:
+					if joystick.get_button( 6 ):
 						quit()
-					elif event.key == pygame.K_UP and self.menu_variant > 1:
+					elif (joystick.get_hat( 0 ) == (0, 1) or joystick.get_axis( 1 ) <= -0.7) and self.menu_variant > 1:
 						if self.menu_variant == 2:
 							self.nr_of_players = 1
 						self.menu_variant -= 1
@@ -1529,7 +1529,7 @@ class Game():
 							self.drawMenuScreen()
 						elif self.menu_state == 1:
 							self.drawSettingsScreen()
-					elif event.key == pygame.K_DOWN and self.menu_variant < 3:
+					elif (joystick.get_hat( 0 ) == (0, -1) or joystick.get_axis( 1 ) >= 0.7) and self.menu_variant < 3:
 						if self.menu_variant == 1:
 							self.nr_of_players = 2
 						self.menu_variant += 1
@@ -1537,7 +1537,7 @@ class Game():
 							self.drawMenuScreen()
 						elif self.menu_state == 1:
 							self.drawSettingsScreen()
-					elif event.key == pygame.K_RETURN:
+					elif joystick.get_button( 0 ):
 						if(self.menu_variant == 2 or self.menu_variant == 1) and self.menu_state == 0:
 							main_loop = False
 						elif(self.menu_variant == 1) and self.menu_state == 1:
