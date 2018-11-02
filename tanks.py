@@ -1465,8 +1465,11 @@ class Game():
 		main_loop = True
 		while main_loop:
 			time_passed = self.clock.tick(50)
-			joystick = pygame.joystick.Joystick( 0 )
-			joystick.init()
+			try:
+				joystick = pygame.joystick.Joystick( 0 )
+				joystick.init()
+			except:
+				pass
 			#print(self.menu_variant)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -1837,8 +1840,12 @@ class Game():
 		If Enter key is pressed, finish animation immediately
 		@return None
 		"""
-		joystick = pygame.joystick.Joystick( 0 )
-		joystick.init()
+		try:
+			joystick = pygame.joystick.Joystick( 0 )
+			joystick.init()
+		except:
+			pass
+		
 
 
 		global screen
@@ -2116,7 +2123,7 @@ class Game():
 						if joystick.get_button( 7 ):
 							self.showMenu()
 						if player.state == player.STATE_ALIVE:
-							
+
 							if joystick.get_button( 0 ):
 								if player.fire() and play_sounds:
 									sounds["fire"].play()
