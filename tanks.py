@@ -1516,6 +1516,49 @@ class Game():
 							elif(self.menu_state == 1):
 								self.menu_state = 0
 								self.drawMenuScreen()
+								
+#Joystick (Gamepad)
+				elif event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_q:
+						quit()
+					elif event.key == pygame.K_UP and self.menu_variant > 1:
+						if self.menu_variant == 2:
+							self.nr_of_players = 1
+						self.menu_variant -= 1
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
+					elif event.key == pygame.K_DOWN and self.menu_variant < 3:
+						if self.menu_variant == 1:
+							self.nr_of_players = 2
+						self.menu_variant += 1
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
+					elif event.key == pygame.K_RETURN:
+						if(self.menu_variant == 2 or self.menu_variant == 1) and self.menu_state == 0:
+							main_loop = False
+						elif(self.menu_variant == 1) and self.menu_state == 1:
+							if(not self.fullScreen):
+								screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+								self.fullScreen = True
+							else:
+								screen = pygame.display.set_mode(self.size)
+								self.fullScreen = False
+							self.drawSettingsScreen()
+						elif(self.menu_variant == 3):
+							if (self.menu_state == 0):
+								if (self.menu_state == 0):
+									self.menu_state = 1
+									self.drawSettingsScreen()
+								elif (self.menu_state == 1):
+									self.menu_state = 0
+									self.drawMenuScreen()
+							elif(self.menu_state == 1):
+								self.menu_state = 0
+								self.drawMenuScreen()
 
 
 		del players[:]
