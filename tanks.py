@@ -2163,35 +2163,36 @@ class Game():
 						try:
 							joystick = pygame.joystick.Joystick( player_number )
 							joystick.init()
+							
+							if joystick.get_button( 7 ):
+								self.showMenu()
+							if player.state == player.STATE_ALIVE:
+								
+								if joystick.get_button( 0 ):
+									if player.fire() and play_sounds:
+										sounds["fire"].play()
+
+								if joystick.get_hat( 0 ) == (0, 1) or joystick.get_axis( 1 ) <= -0.7:
+									player.pressed[0] = True
+								else:
+									player.pressed[0] = False
+
+								if joystick.get_hat( 0 ) == (1, 0) or joystick.get_axis( 0 ) >= 0.7:
+									player.pressed[1] = True
+								else:
+									player.pressed[1] = False
+
+								if joystick.get_hat( 0 ) == (0, -1) or joystick.get_axis( 1 ) >= 0.7:
+									player.pressed[2] = True
+								else:
+									player.pressed[2] = False
+
+								if joystick.get_hat( 0 ) == (-1, 0) or joystick.get_axis( 0 ) <= -0.7:
+									player.pressed[3] = True
+								else:
+									player.pressed[3] = False
 						except:
 							pass
-						if joystick.get_button( 7 ):
-							self.showMenu()
-						if player.state == player.STATE_ALIVE:
-							
-							if joystick.get_button( 0 ):
-								if player.fire() and play_sounds:
-									sounds["fire"].play()
-
-							if joystick.get_hat( 0 ) == (0, 1) or joystick.get_axis( 1 ) <= -0.7:
-								player.pressed[0] = True
-							else:
-								player.pressed[0] = False
-
-							if joystick.get_hat( 0 ) == (1, 0) or joystick.get_axis( 0 ) >= 0.7:
-								player.pressed[1] = True
-							else:
-								player.pressed[1] = False
-
-							if joystick.get_hat( 0 ) == (0, -1) or joystick.get_axis( 1 ) >= 0.7:
-								player.pressed[2] = True
-							else:
-								player.pressed[2] = False
-
-							if joystick.get_hat( 0 ) == (-1, 0) or joystick.get_axis( 0 ) <= -0.7:
-								player.pressed[3] = True
-							else:
-								player.pressed[3] = False
 							
 
 			for player in players:
