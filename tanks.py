@@ -11,7 +11,7 @@ class myRect(pygame.Rect):
 
 class Timer(object):
 	def __init__(self):
-		self.timers = []
+		self.timers = [] 
 
 	def add(self, interval, f, repeat = -1):
 		options = {
