@@ -1517,6 +1517,49 @@ class Game():
 								self.menu_state = 0
 								self.drawMenuScreen()
 
+#Joystick (Gamepad)
+				elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION:
+					if joystick.get_button( 6 ):
+						quit()
+					elif (joystick.get_hat( 0 ) == (0, 1) or joystick.get_axis( 1 ) <= -0.7) and self.menu_variant > 1:
+						if self.menu_variant == 2:
+							self.nr_of_players = 1
+						self.menu_variant -= 1
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
+					elif (joystick.get_hat( 0 ) == (0, -1) or joystick.get_axis( 1 ) >= 0.7) and self.menu_variant < 3:
+						if self.menu_variant == 1:
+							self.nr_of_players = 2
+						self.menu_variant += 1
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
+					elif joystick.get_button( 0 ):
+						if(self.menu_variant == 2 or self.menu_variant == 1) and self.menu_state == 0:
+							main_loop = False
+						elif(self.menu_variant == 1) and self.menu_state == 1:
+							if(not self.fullScreen):
+								screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+								self.fullScreen = True
+							else:
+								screen = pygame.display.set_mode(self.size)
+								self.fullScreen = False
+							self.drawSettingsScreen()
+						elif(self.menu_variant == 3):
+							if (self.menu_state == 0):
+								if (self.menu_state == 0):
+									self.menu_state = 1
+									self.drawSettingsScreen()
+								elif (self.menu_state == 1):
+									self.menu_state = 0
+									self.drawMenuScreen()
+							elif(self.menu_state == 1):
+								self.menu_state = 0
+								self.drawMenuScreen()
+
 
 		del players[:]
 		self.nextLevel()
@@ -1963,7 +2006,7 @@ class Game():
 		f = open(filename, "r")
 		hiscore = int(f.read())
 
-		if hiscore > 0 and hiscore < 1000000:
+		if hiscore >= 0 and hiscore < 1000000:
 			return hiscore
 		else:
 			print ("cheater =[")
