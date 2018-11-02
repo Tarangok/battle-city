@@ -1,6 +1,6 @@
 
 # coding=utf-8
-
+#New branch JoyControl
 import os, pygame, time, random, uuid, sys
 
 class myRect(pygame.Rect):
@@ -580,6 +580,9 @@ class Tank():
 
 		# each tank can pick up 1 bonus
 		self.bonus = None
+
+
+
 
 		# navigation keys: fire, up, right, down, left
 		self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
@@ -1466,6 +1469,8 @@ class Game():
 		main_loop = True
 		while main_loop:
 			time_passed = self.clock.tick(50)
+			joystick = pygame.joystick.Joystick( 0 )
+			joystick.init()
 			#print(self.menu_variant)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -1833,6 +1838,9 @@ class Game():
 		If Enter key is pressed, finish animation immediately
 		@return None
 		"""
+		joystick = pygame.joystick.Joystick( 0 )
+		joystick.init()
+
 
 		global screen
 
@@ -1849,6 +1857,9 @@ class Game():
 					if event.key == pygame.K_RETURN:
 						y = 0
 						break
+				elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION:
+					y = 0
+					break
 
 			screen.blit(screen_cp, [0, y])
 			pygame.display.flip()
@@ -2096,6 +2107,41 @@ class Game():
 									player.pressed[2] = False
 								elif index == 4:
 									player.pressed[3] = False
+
+				elif (event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION) and not self.game_over and self.active:
+					player_number = -1
+					for player in players:
+						player_number += 1
+						joystick = pygame.joystick.Joystick( player_number )
+						joystick.init()
+						if joystick.get_button( 7 ):
+							self.showMenu()
+						if player.state == player.STATE_ALIVE:
+							
+							if joystick.get_button( 0 ):
+								if player.fire() and play_sounds:
+									sounds["fire"].play()
+
+							if joystick.get_hat( 0 ) == (0, 1) or joystick.get_axis( 1 ) <= -0.7:
+								player.pressed[0] = True
+							else:
+								player.pressed[0] = False
+
+							if joystick.get_hat( 0 ) == (1, 0) or joystick.get_axis( 0 ) >= 0.7:
+								player.pressed[1] = True
+							else:
+								player.pressed[1] = False
+
+							if joystick.get_hat( 0 ) == (0, -1) or joystick.get_axis( 1 ) >= 0.7:
+								player.pressed[2] = True
+							else:
+								player.pressed[2] = False
+
+							if joystick.get_hat( 0 ) == (-1, 0) or joystick.get_axis( 0 ) <= -0.7:
+								player.pressed[3] = True
+							else:
+								player.pressed[3] = False
+							
 
 			for player in players:
 				if player.state == player.STATE_ALIVE and not self.game_over and self.active:
