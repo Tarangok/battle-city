@@ -1,8 +1,6 @@
 
-#!/usr/bin/python
-#Komment
 # coding=utf-8
-
+#New branch JoyControl
 import os, pygame, time, random, uuid, sys
 
 class myRect(pygame.Rect):
@@ -13,7 +11,7 @@ class myRect(pygame.Rect):
 
 class Timer(object):
 	def __init__(self):
-		self.timers = []
+		self.timers = [] 
 
 	def add(self, interval, f, repeat = -1):
 		options = {
@@ -582,6 +580,9 @@ class Tank():
 
 		# each tank can pick up 1 bonus
 		self.bonus = None
+
+
+
 
 		# navigation keys: fire, up, right, down, left
 		self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
@@ -1260,12 +1261,12 @@ class Game():
 
 		pygame.display.set_caption("Battle City")
 
-		size = width, height = 480, 416
+		self.size = width, height = 480, 416
 
 		if "-f" in sys.argv[1:]:
-			screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+			screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
 		else:
-			screen = pygame.display.set_mode(size)
+			screen = pygame.display.set_mode(self.size)
 
 		self.clock = pygame.time.Clock()
 
@@ -1313,6 +1314,9 @@ class Game():
 
 		# number of players. here is defined preselected menu value
 		self.nr_of_players = 1
+
+		self.menu_variant = 1;
+		self.menu_variant_x = 1;
 
 		del players[:]
 		del bullets[:]
@@ -1454,35 +1458,71 @@ class Game():
 
 		# set current stage to 0
 		self.stage = 1
+		self.menu_state = 0;
+		self.fullScreen = 0
+
 
 		self.animateIntroScreen()
+
+		self.drawMenuScreen()
 
 		main_loop = True
 		while main_loop:
 			time_passed = self.clock.tick(50)
-
+			joystick = pygame.joystick.Joystick( 0 )
+			joystick.init()
+			#print(self.menu_variant)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					quit()
 				elif event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_q:
 						quit()
-					elif event.key == pygame.K_UP:
-						if self.nr_of_players == 2:
+					elif event.key == pygame.K_UP and self.menu_variant > 1:
+						if self.menu_variant == 2:
 							self.nr_of_players = 1
-							self.drawIntroScreen()
-					elif event.key == pygame.K_DOWN:
-						if self.nr_of_players == 1:
+						self.menu_variant -= 1
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
+					elif event.key == pygame.K_DOWN and self.menu_variant < 3:
+						if self.menu_variant == 1:
 							self.nr_of_players = 2
-							self.drawIntroScreen()
+						self.menu_variant += 1
+						if self.menu_state == 0:
+							self.drawMenuScreen()
+						elif self.menu_state == 1:
+							self.drawSettingsScreen()
 					elif event.key == pygame.K_RETURN:
-						main_loop = False
+						if(self.menu_variant == 2 or self.menu_variant == 1) and self.menu_state == 0:
+							main_loop = False
+						elif(self.menu_variant == 1) and self.menu_state == 1:
+							if(not self.fullScreen):
+								screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+								self.fullScreen = True
+							else:
+								screen = pygame.display.set_mode(self.size)
+								self.fullScreen = False
+							self.drawSettingsScreen()
+						elif(self.menu_variant == 3):
+							if (self.menu_state == 0):
+								if (self.menu_state == 0):
+									self.menu_state = 1
+									self.drawSettingsScreen()
+								elif (self.menu_state == 1):
+									self.menu_state = 0
+									self.drawMenuScreen()
+							elif(self.menu_state == 1):
+								self.menu_state = 0
+								self.drawMenuScreen()
+
 
 		del players[:]
 		self.nextLevel()
 
 	def reloadPlayers(self):
-		""" Init players
+		""" Init players 
 		If players already exist, just reset them
 		"""
 
@@ -1722,7 +1762,7 @@ class Game():
 			screen.blit(self.font.render(str(self.stage), False, text_color), [x+17, y+312])
 
 
-	def drawIntroScreen(self, put_on_surface = True):
+	def drawMenuScreen(self, put_on_surface = True):
 		""" Draw intro (menu) screen
 		@param boolean put_on_surface If True, flip display after drawing
 		@return None
@@ -1740,15 +1780,52 @@ class Game():
 
 			screen.blit(self.font.render("1 PLAYER", True, pygame.Color('white')), [165, 250])
 			screen.blit(self.font.render("2 PLAYERS", True, pygame.Color('white')), [165, 275])
+			screen.blit(self.font.render("SETTINGS", True, pygame.Color('white')), [165, 300])
 
 			screen.blit(self.font.render("(c) 1980 1985 NAMCO LTD.", True, pygame.Color('white')), [50, 350])
 			screen.blit(self.font.render("ALL RIGHTS RESERVED", True, pygame.Color('white')), [85, 380])
 
 
-		if self.nr_of_players == 1:
+		if self.menu_variant == 1:
 			screen.blit(self.player_image, [125, 245])
-		elif self.nr_of_players == 2:
+		elif self.menu_variant == 2:
 			screen.blit(self.player_image, [125, 270])
+		elif self.menu_variant == 3:
+			screen.blit(self.player_image, [125, 295])
+
+		self.writeInBricks("battle", [65, 80])
+		self.writeInBricks("city", [129, 160])
+
+		if put_on_surface:
+			pygame.display.flip()
+
+	def drawSettingsScreen(self, put_on_surface = True):
+
+		global screen
+
+		screen.fill([0, 0, 0])
+
+		if pygame.font.get_init():
+
+			hiscore = self.loadHiscore()
+
+			screen.blit(self.font.render("HI- "+str(hiscore), True, pygame.Color('white')), [170, 35])
+
+			screen.blit(self.font.render("FULL SCREEN", True, pygame.Color('white')), [165, 250])
+			
+			screen.blit(self.font.render("BACK", True, pygame.Color('white')), [165, 300])
+
+			screen.blit(self.font.render("(c) 1980 1985 NAMCO LTD.", True, pygame.Color('white')), [50, 350])
+			screen.blit(self.font.render("ALL RIGHTS RESERVED", True, pygame.Color('white')), [85, 380])
+
+
+		if self.menu_variant == 1:
+			screen.blit(self.player_image, [125, 245])
+		elif self.menu_variant == 2:
+			screen.blit(self.player_image, [125, 270])
+		elif self.menu_variant == 3:
+			screen.blit(self.player_image, [125, 295])
+
 
 		self.writeInBricks("battle", [65, 80])
 		self.writeInBricks("city", [129, 160])
@@ -1761,10 +1838,13 @@ class Game():
 		If Enter key is pressed, finish animation immediately
 		@return None
 		"""
+		joystick = pygame.joystick.Joystick( 0 )
+		joystick.init()
+
 
 		global screen
 
-		self.drawIntroScreen(False)
+		self.drawMenuScreen(False)
 		screen_cp = screen.copy()
 
 		screen.fill([0, 0, 0])
@@ -1777,6 +1857,9 @@ class Game():
 					if event.key == pygame.K_RETURN:
 						y = 0
 						break
+				elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION:
+					y = 0
+					break
 
 			screen.blit(screen_cp, [0, y])
 			pygame.display.flip()
@@ -1875,16 +1958,16 @@ class Game():
 		"""
 		filename = ".hiscore"
 		if (not os.path.isfile(filename)):
-			return 20000
+			return 0
 
 		f = open(filename, "r")
 		hiscore = int(f.read())
 
-		if hiscore > 19999 and hiscore < 1000000:
+		if hiscore > 0 and hiscore < 1000000:
 			return hiscore
 		else:
 			print ("cheater =[")
-			return 20000
+			return 0
 
 	def saveHiscore(self, hiscore):
 		""" Save hiscore
@@ -2025,6 +2108,41 @@ class Game():
 								elif index == 4:
 									player.pressed[3] = False
 
+				elif (event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION) and not self.game_over and self.active:
+					player_number = -1
+					for player in players:
+						player_number += 1
+						joystick = pygame.joystick.Joystick( player_number )
+						joystick.init()
+						if joystick.get_button( 7 ):
+							self.showMenu()
+						if player.state == player.STATE_ALIVE:
+							
+							if joystick.get_button( 0 ):
+								if player.fire() and play_sounds:
+									sounds["fire"].play()
+
+							if joystick.get_hat( 0 ) == (0, 1) or joystick.get_axis( 1 ) <= -0.7:
+								player.pressed[0] = True
+							else:
+								player.pressed[0] = False
+
+							if joystick.get_hat( 0 ) == (1, 0) or joystick.get_axis( 0 ) >= 0.7:
+								player.pressed[1] = True
+							else:
+								player.pressed[1] = False
+
+							if joystick.get_hat( 0 ) == (0, -1) or joystick.get_axis( 1 ) >= 0.7:
+								player.pressed[2] = True
+							else:
+								player.pressed[2] = False
+
+							if joystick.get_hat( 0 ) == (-1, 0) or joystick.get_axis( 0 ) <= -0.7:
+								player.pressed[3] = True
+							else:
+								player.pressed[3] = False
+							
+
 			for player in players:
 				if player.state == player.STATE_ALIVE and not self.game_over and self.active:
 					if player.pressed[0] == True:
@@ -2080,6 +2198,7 @@ class Game():
 			gtimer.update(time_passed)
 
 			self.draw()
+
 
 if __name__ == "__main__":
 
