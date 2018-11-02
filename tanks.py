@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#Komment
 # coding=utf-8
 
 import os, pygame, time, random, uuid, sys
