@@ -11,7 +11,7 @@ class myRect(pygame.Rect):
 
 class Timer(object):
 	def __init__(self):
-		self.timers = []
+		self.timers = [] 
 
 	def add(self, interval, f, repeat = -1):
 		options = {
@@ -1462,7 +1462,7 @@ class Game():
 		main_loop = True
 		while main_loop:
 			time_passed = self.clock.tick(50)
-			print(self.menu_variant)
+			#print(self.menu_variant)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					quit()
