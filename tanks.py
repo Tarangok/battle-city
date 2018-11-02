@@ -2006,7 +2006,7 @@ class Game():
 		f = open(filename, "r")
 		hiscore = int(f.read())
 
-		if hiscore > 0 and hiscore < 1000000:
+		if hiscore >= 0 and hiscore < 1000000:
 			return hiscore
 		else:
 			print ("cheater =[")
