@@ -1964,16 +1964,16 @@ class Game():
 		"""
 		filename = ".hiscore"
 		if (not os.path.isfile(filename)):
-			return 20000
+			return 0
 
 		f = open(filename, "r")
 		hiscore = int(f.read())
 
-		if hiscore > 19999 and hiscore < 1000000:
+		if hiscore >= 0 and hiscore < 1000000:
 			return hiscore
 		else:
 			print ("cheater =[")
-			return 20000
+			return 0
 
 	def saveHiscore(self, hiscore):
 		""" Save hiscore
