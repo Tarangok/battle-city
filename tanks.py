@@ -2160,8 +2160,11 @@ class Game():
 					player_number = -1
 					for player in players:
 						player_number += 1
-						joystick = pygame.joystick.Joystick( player_number )
-						joystick.init()
+						try:
+							joystick = pygame.joystick.Joystick( player_number )
+							joystick.init()
+						except:
+							pass
 						if joystick.get_button( 7 ):
 							self.showMenu()
 						if player.state == player.STATE_ALIVE:
