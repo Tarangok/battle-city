@@ -581,8 +581,11 @@ class Tank():
 		# each tank can pick up 1 bonus
 		self.bonus = None
 
+
+
+
 		# navigation keys: fire, up, right, down, left
-		self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
+		#self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
 
 		# currently pressed buttons (navigation only)
 		self.pressed = [False] * 4
@@ -1462,6 +1465,8 @@ class Game():
 		main_loop = True
 		while main_loop:
 			time_passed = self.clock.tick(50)
+			joystick = pygame.joystick.Joystick( 0 )
+			joystick.init()
 			#print(self.menu_variant)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -1486,6 +1491,26 @@ class Game():
 							self.showSettings()
 						elif(self.menu_variant == 4):
 							quit()
+				elif event.type == pygame.JOYHATMOTION or event.type == pygame.JOYBUTTONDOWN:
+					if joystick.get_button( 6 ):
+						quit()
+					elif joystick.get_hat( 0 ) == (0, 1) and self.menu_variant > 1:
+						if self.menu_variant == 2:
+							self.nr_of_players = 1
+						self.menu_variant -= 1
+						self.drawIntroScreen()
+					elif joystick.get_hat( 0 ) == (0, -1) and self.menu_variant < 4:
+						if self.menu_variant == 1:
+							self.nr_of_players = 2
+						self.menu_variant += 1
+						self.drawIntroScreen()
+					elif joystick.get_button( 0 ):
+						if(self.menu_variant == 2 or self.menu_variant == 1):
+							main_loop = False
+						elif(self.menu_variant == 3):
+							self.showSettings()
+						elif(self.menu_variant == 4):
+								quit()					
 
 
 		del players[:]
