@@ -1263,10 +1263,10 @@ class Game():
 
 		self.size = width, height = 480, 416
 
-		if "-f" in sys.argv[1:]:
-			screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
-		else:
-			screen = pygame.display.set_mode(self.size)
+		#if "-f" in sys.argv[1:]:
+		#	screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+		#else:
+		#	screen = pygame.display.set_mode(self.size)
 
 		self.clock = pygame.time.Clock()
 
