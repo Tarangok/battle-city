@@ -762,13 +762,13 @@ class Tank():
 		return int(round(num / (base * 1.0)) * base)
 
 
-	def bulletImpact(self, friendly_fire = False, damage = 100, tank = None):
+	def bulletImpact(self, friendly_fire = True, damage = 100, tank = None):
 		""" Bullet impact
 		Return True if bullet should be destroyed on impact. Only enemy friendly-fire
 		doesn't trigger bullet explosion
 		"""
 
-		global play_sounds, sounds
+		global play_sounds, sounds, game_mode
 
 		if self.shielded:
 			return True
@@ -787,14 +787,20 @@ class Tank():
 
 				self.explode()
 			return True
+#		else:
+#			return False
 
 		if self.side == self.SIDE_ENEMY:
 			return False
 		elif self.side == self.SIDE_PLAYER:
-			if not self.paralised:
-				self.setParalised(True)
-				self.timer_uuid_paralise = gtimer.add(10000, lambda :self.setParalised(False), 1)
-			return True
+			if game_mode == 1:
+				if not self.paralised:
+					self.setParalised(True)
+					self.timer_uuid_paralise = gtimer.add(10000, lambda :self.setParalised(False), 1)
+				return True
+			else:
+				self.explode()
+				return True
 
 	def setParalised(self, paralised = True):
 		""" set tank paralise state
@@ -1263,10 +1269,10 @@ class Game():
 
 		self.size = width, height = 480, 416
 
-		#if "-f" in sys.argv[1:]:
-		#	screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
-		#else:
-		#	screen = pygame.display.set_mode(self.size)
+		if "-f" in sys.argv[1:]:
+			screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+		else:
+			screen = pygame.display.set_mode(self.size)
 
 		self.clock = pygame.time.Clock()
 
@@ -1448,7 +1454,7 @@ class Game():
 		exit from this screen and start the game with selected number of players
 		"""
 
-		global players, screen
+		global players, screen, game_mode
 
 		# stop game main loop (if any)
 		self.running = False
@@ -1460,7 +1466,7 @@ class Game():
 		self.stage = 1
 		self.menu_state = 0;
 		self.fullScreen = 0
-
+		#game_mode = 1
 
 		self.animateIntroScreen()
 
@@ -1468,13 +1474,13 @@ class Game():
 
 		main_loop = True
 		while main_loop:
+#			print(str(self.menu_variant)+" "+str(self.menu_state))
 			time_passed = self.clock.tick(50)
 			try:
 				joystick = pygame.joystick.Joystick( 0 )
 				joystick.init()
 			except:
 				pass
-			#print(self.menu_variant)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					quit()
@@ -1482,43 +1488,69 @@ class Game():
 					if event.key == pygame.K_q:
 						quit()
 					elif event.key == pygame.K_UP and self.menu_variant > 1:
-						if self.menu_variant == 2:
-							self.nr_of_players = 1
 						self.menu_variant -= 1
 						if self.menu_state == 0:
 							self.drawMenuScreen()
 						elif self.menu_state == 1:
 							self.drawSettingsScreen()
+						elif self.menu_state == 2:
+							self.drawTwoPlayersScreen()
 					elif event.key == pygame.K_DOWN and self.menu_variant < 3:
-						if self.menu_variant == 1:
-							self.nr_of_players = 2
 						self.menu_variant += 1
 						if self.menu_state == 0:
 							self.drawMenuScreen()
 						elif self.menu_state == 1:
 							self.drawSettingsScreen()
+						elif self.menu_state == 2:
+							self.drawTwoPlayersScreen()
+# Выбор варианта меню
 					elif event.key == pygame.K_RETURN:
-						if(self.menu_variant == 2 or self.menu_variant == 1) and self.menu_state == 0:
-							main_loop = False
-						elif(self.menu_variant == 1) and self.menu_state == 1:
-							if(not self.fullScreen):
-								screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
-								self.fullScreen = True
-							else:
-								screen = pygame.display.set_mode(self.size)
-								self.fullScreen = False
-							self.drawSettingsScreen()
-						elif(self.menu_variant == 3):
-							if (self.menu_state == 0):
-								if (self.menu_state == 0):
-									self.menu_state = 1
-									self.drawSettingsScreen()
-								elif (self.menu_state == 1):
-									self.menu_state = 0
-									self.drawMenuScreen()
-							elif(self.menu_state == 1):
+#Главное меню
+						if self.menu_state == 0:
+
+							if(self.menu_variant == 1):
+								self.nr_of_players = 1
+								game_mode = 1
+								main_loop = False
+
+							elif(self.menu_variant == 2):
+								self.nr_of_players = 2
+								self.menu_state = 2
+
+								self.drawTwoPlayersScreen()
+							elif(self.menu_variant == 3):
+								self.menu_state = 1
+								self.drawSettingsScreen()
+#Настройки
+						elif self.menu_state == 1:
+
+							if self.menu_variant == 1:
+								if(not self.fullScreen):
+									screen = pygame.display.set_mode(self.size, pygame.FULLSCREEN)
+									self.fullScreen = True
+								else:
+									screen = pygame.display.set_mode(self.size)
+									self.fullScreen = False
+								self.drawSettingsScreen()
+
+							elif self.menu_variant == 3:
 								self.menu_state = 0
 								self.drawMenuScreen()
+#Два игрока
+						elif self.menu_state == 2:
+
+							if self.menu_variant == 1:
+								game_mode = 1
+								main_loop = False
+
+							elif self.menu_variant == 2:
+								game_mode = 2
+								main_loop = False
+
+							elif self.menu_variant == 3:
+								self.menu_state = 0;
+								self.drawMenuScreen()
+							
 
 #Joystick (Gamepad)
 				elif event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION:
@@ -1773,7 +1805,7 @@ class Game():
 
 	def drawSidebar(self):
 
-		global screen, players, enemies
+		global screen, players, enemies, game_mode
 
 		x = 416
 		y = 0
@@ -1781,15 +1813,15 @@ class Game():
 
 		xpos = x + 16
 		ypos = y + 16
-
-		# draw enemy lives
-		for n in range(len(self.level.enemies_left) + len(enemies)):
-			screen.blit(self.enemy_life_image, [xpos, ypos])
-			if n % 2 == 1:
-				xpos = x + 16
-				ypos+= 17
-			else:
-				xpos += 17
+		if game_mode == 1:
+			# draw enemy lives
+			for n in range(len(self.level.enemies_left) + len(enemies)):
+				screen.blit(self.enemy_life_image, [xpos, ypos])
+				if n % 2 == 1:
+					xpos = x + 16
+					ypos+= 17
+				else:
+					xpos += 17
 
 		# players' lives
 		if pygame.font.get_init():
@@ -1859,6 +1891,40 @@ class Game():
 
 			screen.blit(self.font.render("FULL SCREEN", True, pygame.Color('white')), [165, 250])
 			
+			screen.blit(self.font.render("BACK", True, pygame.Color('white')), [165, 300])
+
+			screen.blit(self.font.render("(c) 1980 1985 NAMCO LTD.", True, pygame.Color('white')), [50, 350])
+			screen.blit(self.font.render("ALL RIGHTS RESERVED", True, pygame.Color('white')), [85, 380])
+
+
+		if self.menu_variant == 1:
+			screen.blit(self.player_image, [125, 245])
+		elif self.menu_variant == 2:
+			screen.blit(self.player_image, [125, 270])
+		elif self.menu_variant == 3:
+			screen.blit(self.player_image, [125, 295])
+
+
+		self.writeInBricks("battle", [65, 80])
+		self.writeInBricks("city", [129, 160])
+
+		if put_on_surface:
+			pygame.display.flip()
+
+	def drawTwoPlayersScreen(self, put_on_surface = True):
+
+		global screen
+
+		screen.fill([0, 0, 0])
+
+		if pygame.font.get_init():
+
+			hiscore = self.loadHiscore()
+
+			screen.blit(self.font.render("HI- "+str(hiscore), True, pygame.Color('white')), [170, 35])
+
+			screen.blit(self.font.render("CO-OP", True, pygame.Color('white')), [165, 250])
+			screen.blit(self.font.render("1 VS 1", True, pygame.Color('white')), [165, 275])
 			screen.blit(self.font.render("BACK", True, pygame.Color('white')), [165, 300])
 
 			screen.blit(self.font.render("(c) 1980 1985 NAMCO LTD.", True, pygame.Color('white')), [50, 350])
@@ -2049,7 +2115,7 @@ class Game():
 	def nextLevel(self):
 		""" Start next level """
 
-		global castle, players, bullets, bonuses, play_sounds, sounds
+		global castle, players, bullets, bonuses, play_sounds, sounds, game_mode
 
 		del bullets[:]
 		del enemies[:]
@@ -2061,25 +2127,25 @@ class Game():
 		self.stage += 1
 		self.level = Level(self.stage)
 		self.timefreeze = False
+		if game_mode == 1:
+			# set number of enemies by types (basic, fast, power, armor) according to level
+			levels_enemies = (
+				(18,2,0,0), (14,4,0,2), (14,4,0,2), (2,5,10,3), (8,5,5,2),
+				(9,2,7,2), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
+				(5,5,4,6), (0,6,8,6), (0,8,8,4), (0,4,10,6), (0,2,10,8),
+				(16,2,0,2), (8,2,8,2), (2,8,6,4), (4,4,4,8), (2,8,2,8),
+				(6,2,8,4), (6,8,2,4), (0,10,4,6), (10,4,4,2), (0,8,2,10),
+				(4,6,4,6), (2,8,2,8), (15,2,2,1), (0,4,10,6), (4,8,4,4),
+				(3,8,3,6), (6,4,2,8), (4,4,4,8), (0,10,4,6), (0,6,4,10)
+			)
 
-		# set number of enemies by types (basic, fast, power, armor) according to level
-		levels_enemies = (
-			(18,2,0,0), (14,4,0,2), (14,4,0,2), (2,5,10,3), (8,5,5,2),
-			(9,2,7,2), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
-			(5,5,4,6), (0,6,8,6), (0,8,8,4), (0,4,10,6), (0,2,10,8),
-			(16,2,0,2), (8,2,8,2), (2,8,6,4), (4,4,4,8), (2,8,2,8),
-			(6,2,8,4), (6,8,2,4), (0,10,4,6), (10,4,4,2), (0,8,2,10),
-			(4,6,4,6), (2,8,2,8), (15,2,2,1), (0,4,10,6), (4,8,4,4),
-			(3,8,3,6), (6,4,2,8), (4,4,4,8), (0,10,4,6), (0,6,4,10)
-		)
+			if self.stage <= 35:
+				enemies_l = levels_enemies[self.stage - 1]
+			else:
+				enemies_l = levels_enemies[34]
 
-		if self.stage <= 35:
-			enemies_l = levels_enemies[self.stage - 1]
-		else:
-			enemies_l = levels_enemies[34]
-
-		self.level.enemies_left = [0]*enemies_l[0] + [1]*enemies_l[1] + [2]*enemies_l[2] + [3]*enemies_l[3]
-		random.shuffle(self.level.enemies_left)
+			self.level.enemies_left = [0]*enemies_l[0] + [1]*enemies_l[1] + [2]*enemies_l[2] + [3]*enemies_l[3]
+			random.shuffle(self.level.enemies_left)
 
 		if play_sounds:
 			sounds["start"].play()
@@ -2101,7 +2167,7 @@ class Game():
 		self.draw()
 
 		while self.running:
-
+			print(game_mode)
 			time_passed = self.clock.tick(50)
 
 			for event in pygame.event.get():
@@ -2263,6 +2329,7 @@ if __name__ == "__main__":
 	bullets = []
 	bonuses = []
 	labels = []
+	game_mode = 1
 
 	play_sounds = True
 	sounds = {}
